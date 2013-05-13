@@ -10,7 +10,7 @@ Provides:	freetype = %EVRD
 Obsoletes:	freetype < %EVRD
 License:	BSD
 Group:		System/Libraries
-BuildRequires:	libsm-devel libx11-devel libice-devel libtool-base
+BuildRequires:	pkgconfig(sm) libx11-devel libice-devel libtool-base
 URL:		http://www.freetype.org
 Source0:	freetype-%{version}.tar.bz2
 # Patch from X-TT sources, to correctly support Dynalab TTF fonts
