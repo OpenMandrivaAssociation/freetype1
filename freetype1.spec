@@ -5,7 +5,7 @@
 Summary:	Obsolete version of a TrueType font rasterizer library
 Name:		freetype1
 Version:	1.3.1
-Release:	42
+Release:	43
 Provides:	freetype = %EVRD
 Obsoletes:	freetype < %EVRD
 License:	BSD
