@@ -1,0 +1,7 @@
+This package is obsolete.
+
+Nothing in our repositories uses freetype 1.x anymore, and if you want
+to package something new that hasn't been updated to use freetype 2.x
+in the 2 decades it has been out, chances are you shouldn't.
+
+Please don't revive this package.
