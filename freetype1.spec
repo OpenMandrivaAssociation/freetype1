@@ -62,7 +62,7 @@ stand-alone application, though some utility applications are included.
 Summary:	Header files and static library for development with FreeType2
 Group:		Development/C
 Requires:	%{libname} = %{EVRD}
-Provides:	%{oname}-devel
+Provides:	%{oname}-devel = %{EVRD}
 
 %description -n %{devname}
 This package is only needed if you intend to develop or compile applications
