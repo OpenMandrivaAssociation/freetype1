@@ -1,0 +1,31 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 03_ttf2pk-1.5-uninitialized_length.dpatch by
+## Steinar H. Gunderson <sesse@debian.org>, 2006-11-07
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Fixes ttf2tfm segmentation fault issue (#395341)
+## DP:
+## DP: In contrib/ttf2pk/ttfaux.c, there is a static boolean called
+## DP: "initialized" that says whether the structs "in" and "out" are
+## DP: properly initialized.  However, these are non-static, and as such
+## DP: their contents are completely undefined when the function runs
+## DP: for the second time. This could lead to huge values in in.length,
+## DP: leading to huge mallocs, which would return NULL and lead to
+## DP: segfaults.  We solve this in the simplest possible way; that is,
+## DP: by making "in" and "out" static, making ttf2tfm work properly again.
+## DP:
+## DP: See http://bugs.debian.org/395341 for more information.
+
+@DPATCH@
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/ttfaux.c freetype1-1.4pre.cvs20060210/contrib/ttf2pk/ttfaux.c
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/ttfaux.c	2007-09-08 04:59:04.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pk/ttfaux.c	2007-09-08 05:24:18.000000000 +0800
+@@ -135,7 +135,7 @@
+   static Boolean initialized = False;
+ 
+   TT_UShort in_string[2];
+-  TTO_GSUB_String in, out;
++  static TTO_GSUB_String in, out;
+ 
+   TT_UShort script_index, language_index, feature_index;
+   TT_UShort req_feature_index = 0xFFFF;

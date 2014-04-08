@@ -1,0 +1,324 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 98_configure_in.dpatch by Anthony Fok <foka@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Updated configure.{in,ac}, Makefile.in and net.m4 for newer Autoconf
+## DP: Last updated: 2007-09-11
+
+@DPATCH@
+diff -urNad freetype1-1.4pre.cvs20060210~/MakeSub.in freetype1-1.4pre.cvs20060210/MakeSub.in
+--- freetype1-1.4pre.cvs20060210~/MakeSub.in	1998-01-19 22:23:01.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/MakeSub.in	2007-09-11 07:14:33.000000000 +0800
+@@ -5,3 +5,4 @@
+ libdir = @libdir@
+ bindir = @bindir@
+ includedir = @includedir@
++datarootdir = @datarootdir@
+diff -urNad freetype1-1.4pre.cvs20060210~/configure.in freetype1-1.4pre.cvs20060210/configure.in
+--- freetype1-1.4pre.cvs20060210~/configure.in	2002-11-16 01:04:46.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/configure.in	2007-09-11 07:09:52.000000000 +0800
+@@ -6,7 +6,8 @@
+ dnl
+ dnl Process this file with autoconf to produce a configure script.
+ 
+-AC_INIT(lib/freetype.h)
++AC_INIT
++AC_CONFIG_SRCDIR([lib/freetype.h])
+ 
+ dnl Due to a bug in autoconf we must set $srcdir explicitly to an absolute
+ dnl path.
+@@ -28,7 +29,7 @@
+ AC_SUBST(USE_NLS)
+ 
+ dnl Checks for system type.
+-AC_CANONICAL_SYSTEM
++AC_CANONICAL_TARGET
+ 
+ dnl Checks for programs.
+ AC_PROG_CC
+@@ -36,7 +37,7 @@
+ 
+ dnl get Compiler flags right.
+ 
+-if test "x$CC" = xgcc; then
++if test "x$GCC" = xyes; then
+   XX_CFLAGS="-Wall -pedantic -ansi -D_REENTRANT"
+ else
+   case "$host" in
+@@ -66,7 +67,8 @@
+ dnl NLS/gettext nightmare^H^H^H^H^H^H^H^H^H^H support...
+ 
+ if test "$USE_NLS" = "yes"; then
+-  AC_REQUIRE([AC_PROG_MAKE_SET])
++  dnl AC_REQUIRE([AC_PROG_MAKE_SET])
++  AC_PROG_MAKE_SET
+   AC_CHECK_HEADERS(locale.h)
+   AC_CHECK_FUNCS(setlocale)
+   AC_SUBST(HAVE_LOCALE_H)  
+@@ -90,15 +92,14 @@
+ 
+   dnl First, test case a)
+   AC_CACHE_CHECK([for GNU gettext in libc], ftgt_cv_func_gnugettext_libc,
+-      [AC_TRY_LINK([
++      [AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+ #include <libintl.h>
+ extern int _nl_msg_cat_cntr;
+ extern int *_nl_domain_bindings;
+-          ],[
++          ]], [[
+ bindtextdomain ("", "");
+ return (int) gettext ("") + _nl_msg_cat_cntr + *_nl_domain_bindings
+-          ], ftgt_cv_func_gnugettext_libc=yes,
+-             ftgt_cv_func_gnugettext_libc=no)])
++          ]])],[ftgt_cv_func_gnugettext_libc=yes],[ftgt_cv_func_gnugettext_libc=no])])
+ 
+   if test "$ftgt_cv_func_gnugettext_libc" != "yes"; then
+     dnl It does not come for free. Let's check case b),
+@@ -176,12 +177,9 @@
+       fi
+     fi
+ 
+-    AC_TRY_LINK(,
+-                [extern int _nl_msg_cat_cntr;
+-                 return _nl_msg_cat_cntr],
+-                [CATOBJEXT=.gmo
+-                 DATADIRNAME=share],  
+-                [CATOBJEXT=.mo
++    AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[extern int _nl_msg_cat_cntr;
++                 return _nl_msg_cat_cntr]])],[CATOBJEXT=.gmo
++                 DATADIRNAME=share],[CATOBJEXT=.mo
+                  DATADIRNAME=lib])
+     INSTOBJEXT=.mo
+   fi
+@@ -250,12 +248,13 @@
+ dnl directory hierarchy first since autoconf only uses mkdir.
+ $srcdir/mkinstalldirs lib/arch/unix test/arch/unix
+ 
+-AC_OUTPUT(Makefile
++AC_CONFIG_FILES([Makefile
+            MakeSub
+            lib/arch/unix/Makefile
+            test/arch/unix/Makefile 
+-           po/Makefile.in,
+-          [sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile])
++           po/Makefile.in])
++AC_CONFIG_COMMANDS([default],[sed -e "/POTFILES =/r po/POTFILES" po/Makefile.in > po/Makefile],[])
++AC_OUTPUT
+ 
+ 
+ dnl end of configure.in
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2bdf/Makefile.in freetype1-1.4pre.cvs20060210/contrib/ttf2bdf/Makefile.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2bdf/Makefile.in	2001-02-04 01:03:12.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2bdf/Makefile.in	2007-09-11 07:17:02.000000000 +0800
+@@ -26,6 +26,13 @@
+ #
+ 
+ RM = @RM@
++RMF = @RM@ -f
++
++INSTALL = @INSTALL@
++INSTALL_DATA = @INSTALL_DATA@
++INSTALL_PROGRAM = @INSTALL_PROGRAM@
++
++LIBTOOL = ../../libtool
+ MKINSTALLDIRS = ../../mkinstalldirs
+ 
+ CC = @CC@
+@@ -44,31 +51,35 @@
+ exec_prefix = @exec_prefix@
+ bindir = @bindir@
+ mandir = @mandir@
++datarootdir = @datarootdir@
+ 
+ all: ttf2bdf
+ 
+ ttf2bdf: $(OBJS)
+-	$(PURIFY) $(CC) $(STATIC) $(CFLAGS) -o ttf2bdf $(OBJS) $(LIBS)
++	$(LIBTOOL) --mode=link $(PURIFY) $(CC) $(STATIC) $(CFLAGS) \
++					 -o ttf2bdf $(OBJS) $(LIBS)
+ 
+ clean:
+ 	$(RM) -f *.o *BAK *CKP *~ a.out core
+ 
+ realclean: clean
+ 	$(RM) -f ttf2bdf
++	$(RM) -rf .libs/
+ 
+ distclean: clean
+ 	$(RM) -f ttf2bdf config.* Makefile
++	$(RM) -rf .libs/
+ 
+ .c.o:
+ 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
+ 
+ install: ttf2bdf
+ 	@$(MKINSTALLDIRS) $(bindir) $(mandir)/man1
+-	@cp ttf2bdf $(bindir)/ttf2bdf
++	@$(LIBTOOL) --mode=install $(INSTALL_PROGRAM) ttf2bdf $(bindir)/
+ 	@cp ttf2bdf.man $(mandir)/man1/ttf2bdf.1
+ 
+ uninstall:
+-	@$(RM) -f $(bindir)/ttf2bdf
++	@$(LIBTOOL) --mode=uninstall $(RM) -f $(bindir)/ttf2bdf
+ 	@$(RM) -f $(mandir)/man1/ttf2bdf.1
+ 
+ .PHONY: all clean realclean distclean install uninstall
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2bdf/configure.in freetype1-1.4pre.cvs20060210/contrib/ttf2bdf/configure.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2bdf/configure.in	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2bdf/configure.in	2007-09-11 07:09:52.000000000 +0800
+@@ -1,7 +1,10 @@
+ dnl $Id: configure.in,v 1.1.1.1 2000/04/14 17:53:50 davidT Exp $
+ dnl Process this file with autoconf to produce a configure script.
+ 
+-AC_INIT(../../lib/freetype.h)
++AC_INIT
++AC_CONFIG_SRCDIR([../../lib/freetype.h])
++
++AC_CANONICAL_TARGET
+ 
+ AC_PROG_CC
+ 
+@@ -14,7 +17,7 @@
+ 
+ dnl get Compiler flags right.
+ 
+-if test "x$CC" = xgcc; then
++if test "x$GCC" = xyes; then
+ 	XX_CFLAGS="-Wall -pedantic"
+ else
+ 	case "$host" in
+@@ -29,6 +32,7 @@
+ AC_SUBST(XX_CFLAGS)
+ 
+ AC_CHECK_PROG(RM, rm, rm)
++AC_PROG_INSTALL
+ 
+ dnl Checks for header files.
+ AC_HEADER_STDC
+@@ -37,4 +41,5 @@
+ dnl Checks for library functions.
+ AC_FUNC_MEMCMP
+ 
+-AC_OUTPUT(Makefile)
++AC_CONFIG_FILES([Makefile])
++AC_OUTPUT
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pfb/Makefile.in freetype1-1.4pre.cvs20060210/contrib/ttf2pfb/Makefile.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pfb/Makefile.in	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pfb/Makefile.in	2007-09-11 07:17:36.000000000 +0800
+@@ -23,6 +23,7 @@
+ exec_prefix = @exec_prefix@
+ bindir = @bindir@
+ mandir = @mandir@
++datarootdir = @datarootdir@
+ 
+ CFLAGS = @CFLAGS@ @XX_CFLAGS@
+ CPPFLAGS = @CPPFLAGS@ @DEFS@
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pfb/configure.in freetype1-1.4pre.cvs20060210/contrib/ttf2pfb/configure.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pfb/configure.in	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pfb/configure.in	2007-09-11 07:09:52.000000000 +0800
+@@ -1,8 +1,9 @@
+ dnl Process this file with autoconf to produce a configure script.
+ 
+-AC_INIT(../../lib/freetype.h)
++AC_INIT
++AC_CONFIG_SRCDIR([../../lib/freetype.h])
+ 
+-AC_CANONICAL_SYSTEM
++AC_CANONICAL_TARGET
+ 
+ AC_PROG_CC
+ AC_PROG_CPP
+@@ -17,7 +18,7 @@
+ 
+ dnl get Compiler flags right.
+ 
+-if test "x$CC" = xgcc; then
++if test "x$GCC" = xyes; then
+ 	XX_CFLAGS="-Wall -ansi -pedantic"
+ else
+ 	case "$host" in
+@@ -40,6 +41,7 @@
+ AC_HEADER_STDC
+ AC_CHECK_HEADERS(unistd.h)
+ 
+-AC_OUTPUT(Makefile)
++AC_CONFIG_FILES([Makefile])
++AC_OUTPUT
+ 
+ dnl end of configure.in
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/MakeSub.in freetype1-1.4pre.cvs20060210/contrib/ttf2pk/MakeSub.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/MakeSub.in	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pk/MakeSub.in	2007-09-11 07:16:23.000000000 +0800
+@@ -4,3 +4,4 @@
+ exec_prefix = @exec_prefix@
+ bindir = @bindir@
+ mandir = @mandir@
++datarootdir = @datarootdir@
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/configure.ac freetype1-1.4pre.cvs20060210/contrib/ttf2pk/configure.ac
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/configure.ac	2002-06-21 01:34:37.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pk/configure.ac	2007-09-11 07:09:52.000000000 +0800
+@@ -75,7 +75,7 @@
+ 
+ dnl get Compiler flags right.
+ 
+-if test "x$CC" = xgcc; then
++if test "x$GCC" = xyes; then
+ 	XX_CFLAGS="-Wall -pedantic"
+ else
+ 	case "$host" in
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttfbanner/Makefile.in freetype1-1.4pre.cvs20060210/contrib/ttfbanner/Makefile.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttfbanner/Makefile.in	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttfbanner/Makefile.in	2007-09-11 07:13:57.000000000 +0800
+@@ -23,6 +23,7 @@
+ exec_prefix = @exec_prefix@
+ bindir = @bindir@
+ mandir = @mandir@
++datarootdir = @datarootdir@
+ 
+ CFLAGS = @CFLAGS@ @XX_CFLAGS@
+ CPPFLAGS = @CPPFLAGS@ @DEFS@
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttfbanner/configure.in freetype1-1.4pre.cvs20060210/contrib/ttfbanner/configure.in
+--- freetype1-1.4pre.cvs20060210~/contrib/ttfbanner/configure.in	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttfbanner/configure.in	2007-09-11 07:09:52.000000000 +0800
+@@ -1,8 +1,9 @@
+ dnl Process this file with autoconf to produce a configure script.
+ 
+-AC_INIT(../../lib/freetype.h)
++AC_INIT
++AC_CONFIG_SRCDIR([../../lib/freetype.h])
+ 
+-AC_CANONICAL_SYSTEM
++AC_CANONICAL_TARGET
+ 
+ AC_PROG_CC
+ AC_PROG_CPP
+@@ -16,7 +17,7 @@
+ 
+ dnl get Compiler flags right.
+ 
+-if test "x$CC" = xgcc; then
++if test "x$GCC" = xyes; then
+ 	XX_CFLAGS="-Wall -ansi -pedantic"
+ else
+ 	case "$host" in
+@@ -33,6 +34,7 @@
+ AC_CHECK_PROG(RM, rm, rm)
+ AC_PROG_INSTALL
+ 
+-AC_OUTPUT(Makefile)
++AC_CONFIG_FILES([Makefile])
++AC_OUTPUT
+ 
+ dnl end of configure.in
+diff -urNad freetype1-1.4pre.cvs20060210~/net.m4 freetype1-1.4pre.cvs20060210/net.m4
+--- freetype1-1.4pre.cvs20060210~/net.m4	1998-08-12 03:20:42.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/net.m4	2007-09-11 07:09:52.000000000 +0800
+@@ -32,7 +32,7 @@
+ dnl The check for libresolv is in case you are attempting to link statically
+ dnl and happen to have a libresolv.a lying around (and no libnsl.a).
+ dnl
+-AC_DEFUN(AC_LIBRARY_NET, [
++AC_DEFUN([AC_LIBRARY_NET], [
+    # Most operating systems have gethostbyname() in the default searched
+    # libraries (i.e. libc):
+    AC_CHECK_FUNC(gethostbyname, ,

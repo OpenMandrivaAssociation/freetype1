@@ -1,0 +1,70 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 35_ttfonts_map.dpatch by Anthony Fok <foka@debian.org>, 1999-12-12
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Added entries for Arphic PL fonts etc. in ttfonts.map
+## DP: for CJK LaTeX and for building tfm-arphic-* Debian packages.
+
+@DPATCH@
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/data/ttfonts.map freetype1-1.4pre.cvs20060210/contrib/ttf2pk/data/ttfonts.map
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/data/ttfonts.map	2000-04-15 01:53:50.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pk/data/ttfonts.map	2007-09-11 07:46:01.000000000 +0800
+@@ -9,10 +9,57 @@
+ times95          times95.ttf   Encoding=T1-WGL4.enc
+ 
+ ntukai@Big5@     ntu_kai.ttf   Pid = 3 Eid = 4
+-cyberb@Unicode@  cyberbit.ttf
++%cyberb@Unicode@  cyberbit.ttf
+ 
+ % the next entry maps the Unicode encoded font to Big 5 encoding; thus you
+ % can say \begin{CJK}{Big5}{...} (this is an environment from the CJK
+ % package for LaTeX).
+ 
+ mingli@UBig5@    mingliu.ttc   Fontindex = 0
++
++% The following entries are added for Debian GNU/{Linux,Hurd}
++% Last updated: 1999-12-12  <foka@debian.org>
++
++% Arphic Public License fonts
++% {ttf,tfm}-arphic-{bsmi00lp,bkai00mp,gbsn00lp,gkai00mp}
++
++% AR PL Mingti2L Big5
++bsmi@UBig5@	bsmi00lp.ttf
++bsmis@UBig5@	bsmi00lp.ttf	Slant=0.167
++bsmir@UBig5@	bsmi00lp.ttf	Rotate=Yes
++bsmirs@UBig5@	bsmi00lp.ttf	Rotate=Yes	Slant=0.167
++% AR PL KaitiM Big5
++bkai@UBig5@	bkai00mp.ttf
++bkais@UBig5@	bkai00mp.ttf	Slant=0.167
++bkair@UBig5@	bkai00mp.ttf	Rotate=Yes
++bkairs@UBig5@	bkai00mp.ttf	Rotate=Yes	Slant=0.167
++% AR PL SungtiL GB
++gbsn@UGB@	gbsn00lp.ttf
++gbsns@UGB@	gbsn00lp.ttf	Slant=0.167
++gbsnr@UGB@	gbsn00lp.ttf	Rotate=Yes
++gbsnrs@UGB@	gbsn00lp.ttf	Rotate=Yes	Slant=0.167
++% AR PL KaitiM GB
++gkai@UGB@	gkai00mp.ttf
++gkais@UGB@	gkai00mp.ttf	Slant=0.167
++gkair@UGB@	gkai00mp.ttf	Rotate=Yes
++gkairs@UGB@	gkai00mp.ttf	Rotate=Yes	Slant=0.167
++
++% Taiwan Ministry of Education Standard Fonts
++% {ttf,tfm}-twmoe-{sung,kai}
++
++moesng@Big5@	 moe_sung.ttf 	Pid=3	Eid=4
++moekai@Big5@	 moe_kai.ttf	Pid=3	Eid=4
++
++% For future {ttf,tfm}-twmoe-{sung,kai} packages
++% t=Taiwan, m=MoE, sn=sung, ka=kai
++tmsn@Big5@	 moe_sung.ttf 	Pid=3	Eid=4
++tmsns@Big5@	 moe_sung.ttf 	Pid=3	Eid=4	Slant=0.167
++tmsnr@Big5@	 moe_sung.ttf 	Pid=3	Eid=4	Rotate=Yes
++tmsnrs@Big5@	 moe_sung.ttf 	Pid=3	Eid=4	Rotate=Yes	Slant=0.167
++tmka@Big5@	 moe_kai.ttf 	Pid=3	Eid=4
++tmkas@Big5@	 moe_kai.ttf 	Pid=3	Eid=4	Slant=0.167
++tmkar@Big5@	 moe_kai.ttf 	Pid=3	Eid=4	Rotate=Yes
++tmkars@Big5@	 moe_kai.ttf 	Pid=3	Eid=4	Rotate=Yes	Slant=0.167
++
++% Bitstream's Cyberbit font for Unicode
++cyberbit@Unicode@ cyberbit.ttf

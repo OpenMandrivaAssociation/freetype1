@@ -1,0 +1,56 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 02_ttf2pk-1.5-kpathsea.dpatch by Ho-Seok Lee <alee@debian.org>, 2005-12-23
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Patch to make ttf2pk work with tetex-3.0 and beyond (#344439)
+## DP: This patch fixes ttf2pk with kpathsea.
+## DP: See http://bugs.debian.org/344439 for more information.
+
+@DPATCH@
+diff -urNad freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/filesrch.c freetype1-1.4pre.cvs20060210/contrib/ttf2pk/filesrch.c
+--- freetype1-1.4pre.cvs20060210~/contrib/ttf2pk/filesrch.c	2002-01-08 20:48:27.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/contrib/ttf2pk/filesrch.c	2007-09-08 05:23:37.000000000 +0800
+@@ -96,7 +96,7 @@
+   return kpse_find_file(*name, kpse_tex_ps_header_format, True);
+ #endif
+ #else
+-  return kpse_find_file(*name, kpse_program_text_format, True);
++  return kpse_find_file(*name, kpse_enc_format, True);
+ #endif
+ }
+ 
+@@ -130,7 +130,7 @@
+   return kpse_find_file(*name, kpse_tex_ps_header_format, True);
+ #endif
+ #else
+-  return kpse_find_file(*name, kpse_program_text_format, True);
++  return kpse_find_file(*name, kpse_sfd_format, True);
+ #endif
+ }
+ 
+@@ -147,7 +147,7 @@
+   return kpse_find_file(*name, kpse_tex_ps_header_format, True);
+ #endif
+ #else
+-  return kpse_find_file(*name, kpse_program_text_format, True);
++  return kpse_find_file(*name, kpse_fontmap_format, True);
+ #endif
+ }
+ 
+@@ -196,10 +196,15 @@
+   return real_name;
+ 
+ #else /* OLD_KPATHSEA */
++  char* real_name;
+ 
+   /* no extra extension handling necessary */
+ 
+-  return kpse_find_file(*name, kpse_truetype_format, True);
++  real_name= kpse_find_file(*name, kpse_truetype_format, True);
++  if (!real_name)
++      real_name= kpse_find_file(*name, kpse_program_binary_format, True);
++ 
++  return real_name; 
+ 
+ #endif
+ }

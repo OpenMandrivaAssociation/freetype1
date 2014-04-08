@@ -1,0 +1,127 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 04_ftstrpnm_utf8.dpatch by Davide Viti <zinosat@tiscali.it>, 2007-01-16
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: [freetype1-tools] ftstrpnm should work with non-ASCII input (#407204)
+## DP:
+## DP: I just discovered the ftstrpnm tool which is very useful for testing
+## DP: font files without the need of installing them; unfortunately input is
+## DP: limited to ASCII chars. The attached patch extends the support to wide
+## DP: chars: the patch is less invasive as possible and I reckon there's
+## DP: still space for loads of improvements.
+## DP:
+## DP: See http://bugs.debian.org/407204 for further details.
+
+@DPATCH@
+diff -urNad freetype1-1.4pre.cvs20060210~/test/ftstrpnm.c freetype1-1.4pre.cvs20060210/test/ftstrpnm.c
+--- freetype1-1.4pre.cvs20060210~/test/ftstrpnm.c	2001-12-26 04:14:29.000000000 +0800
++++ freetype1-1.4pre.cvs20060210/test/ftstrpnm.c	2007-09-08 05:27:40.000000000 +0800
+@@ -17,6 +17,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <locale.h>
+ 
+ #include "common.h"
+ #include "freetype.h"
+@@ -175,7 +176,7 @@
+ 
+   /* glyph management */
+ 
+-  static void  Load_Glyphs( char*  txt, int  txtlen )
++  static void  Load_Glyphs( wchar_t*  txt, int  txtlen )
+   {
+     unsigned short  i, n, code, load_flags;
+     unsigned short  num_glyphs = 0, no_cmap = 0;
+@@ -224,8 +225,8 @@
+ 
+     for ( i = 0; i < txtlen; ++i )
+     {
+-      unsigned char  j = txt[i];
+ 
++      wchar_t  j = txt[i];
+ 
+       if ( TT_VALID( glyphs[j] ) )
+         continue;
+@@ -311,7 +312,7 @@
+ 
+   /* rasterization stuff */
+ 
+-  static void  Init_Raster_Areas( const char*  txt, int  txtlen )
++  static void  Init_Raster_Areas( wchar_t*  txt, int  txtlen )
+   {
+     int                  i, upm, ascent, descent;
+     TT_Face_Properties   properties;
+@@ -333,16 +334,16 @@
+ 
+     for ( i = 0; i < txtlen; ++i )
+     {
+-      unsigned char  j = txt[i];
+ 
++      wchar_t  j = txt[i];
+ 
+       if ( !TT_VALID( glyphs[j] ) )
+         continue;
+ 
+       TT_Get_Glyph_Metrics( glyphs[j], &gmetrics );
+       pnm_width += gmetrics.advance / 64;
+-    }
+ 
++    }
+     Init_Raster_Map( &bit, pnm_width, pnm_height );
+     Clear_Raster_Map( &bit );
+ 
+@@ -392,7 +393,7 @@
+   }
+ 
+ 
+-  static void  Render_All_Glyphs( char*  txt, int  txtlen )
++  static void  Render_All_Glyphs( wchar_t*  txt, int  txtlen )
+   {
+     int               i;
+     TT_F26Dot6        x, y, adjx;
+@@ -404,7 +405,7 @@
+ 
+     for ( i = 0; i < txtlen; i++ )
+     {
+-      unsigned char  j = txt[i];
++      wchar_t  j = txt[i];
+ 
+       if ( !TT_VALID( glyphs[j] ) )
+         continue;
+@@ -445,6 +446,9 @@
+     char      *txt, *filename;
+     TT_Error  error;
+ 
++    wchar_t *wp;
++
++    setlocale(LC_ALL, "");
+ 
+     /* Parse options */
+ 
+@@ -498,7 +502,8 @@
+     else
+       txt = "The quick brown fox jumps over the lazy dog";
+ 
+-    txtlen = strlen( txt );
++    wp = (wchar_t *)malloc( strlen(txt) * sizeof(wchar_t) );
++    txtlen = mbstowcs(wp, txt, strlen(txt) * sizeof(wchar_t));
+ 
+     /* Initialize engine and other stuff */
+ 
+@@ -507,12 +512,12 @@
+       Panic( "Error while initializing engine, code = 0x%x.\n", error );
+ 
+     Init_Face( filename );
+-    Load_Glyphs( txt, txtlen );
+-    Init_Raster_Areas( txt, txtlen );
+ 
++    Load_Glyphs( wp, txtlen );
++    Init_Raster_Areas( wp, txtlen );
+     /* Do the real work now */
++    Render_All_Glyphs( wp, txtlen );
+ 
+-    Render_All_Glyphs( txt, txtlen );
+     Dump_Raster_Map( &bit, stdout );
+ 
+     /* Clean up */
