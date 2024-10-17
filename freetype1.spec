@@ -10,7 +10,7 @@ Release:	1
 License:	BSD
 Group:		System/Libraries
 BuildRequires:	pkgconfig(sm) pkgconfig(x11) pkgconfig(ice)
-URL:		http://www.freetype.org
+URL:		https://www.freetype.org
 Source0:	%{name}-%{version}.tar.xz
 # Patch from X-TT sources, to correctly support Dynalab TTF fonts
 # very popular in Taiwan
